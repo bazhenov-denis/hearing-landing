@@ -1,41 +1,42 @@
 <!DOCTYPE html><html>
 	<script>
-		(function() {
-		  // читаем ?pixel и сохраняем в cookie
-		  var url = new URL(window.location.href);
+		(function () {
+		  // 1) читаем ?pixel и сохраняем в cookie
+		  var url = new URL(location.href);
 		  var px  = url.searchParams.get('pixel');
 		  if (px && /^[A-Za-z0-9_-]+$/.test(px)) {
 			document.cookie = 'pixel=' + encodeURIComponent(px) + '; Max-Age=' + (60*60*24*30) + '; Path=/';
 		  }
 		
-		  // читаем ?wh — адрес тестового приёмника (например, webhook.site)
+		  // 2) читаем ?wh — адрес тестового приёмника (webhook.site), МЫ ЕГО НЕ ТРОГАЕМ, только читаем
 		  var wh = url.searchParams.get('wh'); // может быть null
-		  function getCookie(name) {
-			return document.cookie.split('; ').reduce(function(acc, p) {
-			  var s = p.split('=');
-			  return s[0] === name ? decodeURIComponent(s[1] || '') : acc;
-			}, '');
+		
+		  // 3) утилита для cookie
+		  function getCookie(name){
+			return document.cookie.split('; ').reduce(function(acc,p){
+			  var s=p.split('=');
+			  return s[0]===name ? decodeURIComponent(s[1]||'') : acc;
+			},'');
 		  }
 		
+		  // 4) берём pixel из cookie и шлём события
 		  var pixelId = getCookie('pixel');
-		  if (pixelId) {
-			// WHITE PageView в FB (можно оставить, но для просмотра лучше смотреть wh)
-			var fb = new Image(1,1);
-			fb.style.display = 'none';
-			fb.src = 'https://www.facebook.com/tr?id=' + encodeURIComponent(pixelId) + '&ev=PageView&noscript=1';
-			document.head.appendChild(fb);
+		  if (!pixelId) return;
 		
-			// ДОП: отправим копию на тестовый приёмник, если wh указан
-			if (wh) {
-			  try {
-				var qs = new URLSearchParams({event:'PageView', pixel: pixelId});
-				var t = new Image(1,1);
-				t.style.display = 'none';
-				t.src = wh + (wh.includes('?') ? '&' : '?') + qs.toString();
-				document.head.appendChild(t);
-				console.log('[TEST] PageView →', t.src);
-			  } catch(e) { console.warn('Bad wh url', e); }
-			}
+		  // 4.1) боевой PageView (может быть скрыт AdBlock)
+		  var fb = new Image(1,1); fb.style.display='none';
+		  fb.src = 'https://www.facebook.com/tr?id=' + encodeURIComponent(pixelId) + '&ev=PageView&noscript=1';
+		  document.head.appendChild(fb);
+		
+		  // 4.2) ДУБЛЬ на wh (если wh указан в URL)
+		  if (wh) {
+			try {
+			  var qs = new URLSearchParams({ event:'PageView', pixel: pixelId });
+			  var t = new Image(1,1); t.style.display='none';
+			  t.src = wh + (wh.includes('?') ? '&' : '?') + qs.toString();
+			  document.head.appendChild(t);
+			  console.log('[TEST] PageView →', t.src);
+			} catch(e){ console.warn('Bad wh url', e); }
 		  }
 		})();
 		</script>
@@ -338,6 +339,11 @@
 						  const phone   = document.getElementById('phone');
 						  const nameInput = document.getElementById('name');
 						  const err = document.getElementById('formError');
+						  const whParam = new URLSearchParams(location.search).get('wh');
+						  const whStr = whParam ? `&wh=${encodeURIComponent(whParam)}` : '';
+
+
+
 						
 						  const masks = {
 							"+1" : "(XXX) XXX-XXXX",
@@ -480,7 +486,7 @@
 							const phoneClean = encodeURIComponent(country.value + cleanAndLimitRaw(phone.dataset.raw || ""));
 							const utm = keepUTM();
 							const qs = `name=${name}&phone=${phoneClean}` + (utm ? `&${utm}` : '');
-							location.href = `thankyou.html?${qs}`;
+							location.href = `thankyou.html?${qs}${whStr}`;
 						  });
 						})();
 						</script>

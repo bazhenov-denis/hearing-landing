@@ -1,40 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- TEST DYNAMIC PIXEL (BLACK / Lead) -->
 <script>
-    (function() {
-      function getCookie(name) {
-        return document.cookie.split('; ').reduce(function(acc, p) {
-          var s = p.split('=');
-          return s[0] === name ? decodeURIComponent(s[1] || '') : acc;
-        }, '');
+    (function () {
+      function getCookie(name){
+        return document.cookie.split('; ').reduce(function(acc,p){
+          var s=p.split('=');
+          return s[0]===name ? decodeURIComponent(s[1]||'') : acc;
+        },'');
       }
     
-      var url = new URL(window.location.href);
-      var wh  = url.searchParams.get('wh'); // тестовый приёмник (webhook.site)
-      var pixelId = getCookie('pixel') || url.searchParams.get('pixel');
+      var url = new URL(location.href);
+      var wh  = url.searchParams.get('wh');                     // <-- читаем wh из URL
+      var pixelId = getCookie('pixel') || url.searchParams.get('pixel'); // fallback
     
-      if (pixelId) {
-        // BLACK Lead в FB (для боевого контура)
-        var fb = new Image(1,1);
-        fb.style.display = 'none';
-        fb.src = 'https://www.facebook.com/tr?id=' + encodeURIComponent(pixelId) + '&ev=Lead&noscript=1';
-        document.head.appendChild(fb);
+      if (!pixelId) return;
     
-        // ДОП: отправим копию на тестовый wh со всеми UTM/данными из URL
-        if (wh) {
-          try {
-            var params = new URLSearchParams(location.search);
-            params.set('event','Lead');
-            params.set('pixel', pixelId);
-            var t = new Image(1,1);
-            t.style.display = 'none';
-            t.src = wh + (wh.includes('?') ? '&' : '?') + params.toString();
-            document.head.appendChild(t);
-            console.log('[TEST] Lead →', t.src);
-          } catch(e) { console.warn('Bad wh url', e); }
-        }
+      // 1) боевой Lead
+      var fb = new Image(1,1); fb.style.display='none';
+      fb.src = 'https://www.facebook.com/tr?id=' + encodeURIComponent(pixelId) + '&ev=Lead&noscript=1';
+      document.head.appendChild(fb);
+    
+      // 2) дубль на wh: отправляем ВСЮ query-строку (UTM, name, phone и т.п.) + event + pixel
+      if (wh) {
+        try {
+          var params = new URLSearchParams(location.search);
+          params.set('event', 'Lead');
+          params.set('pixel', pixelId);
+          var t = new Image(1,1); t.style.display='none';
+          t.src = wh + (wh.includes('?') ? '&' : '?') + params.toString();
+          document.head.appendChild(t);
+          console.log('[TEST] Lead →', t.src);
+        } catch(e){ console.warn('Bad wh url', e); }
       }
     })();
     </script>
