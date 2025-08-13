@@ -28,9 +28,11 @@ https://bazhenov-denis.github.io/hearing-landing/index.html
   ?pixel=TESTPIXEL123
   &wh=https%3A%2F%2Fwebhook.site%2FВАШ_UUID
 
-нужно взять ссылку сверху и после wh=вставить ваш код
+нужно взять ссылку сверху и после wh= вставить то что взяли с webhook 
 
 (Вставляй одной строкой.)
+
+в одной вкладке открываем полученную ссылку, во второй https://webhook.site 
 
 теперь после открытия в https://webhook.site появится запрос и после отправки формы появится запрос с данными пользователя
 
