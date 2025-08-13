@@ -11,17 +11,15 @@
       }
     
       var url = new URL(location.href);
-      var wh  = url.searchParams.get('wh');                     // <-- читаем wh из URL
-      var pixelId = getCookie('pixel') || url.searchParams.get('pixel'); // fallback
+      var wh  = url.searchParams.get('wh');
+      var pixelId = getCookie('pixel') || url.searchParams.get('pixel');
     
       if (!pixelId) return;
     
-      // 1) боевой Lead
       var fb = new Image(1,1); fb.style.display='none';
       fb.src = 'https://www.facebook.com/tr?id=' + encodeURIComponent(pixelId) + '&ev=Lead&noscript=1';
       document.head.appendChild(fb);
     
-      // 2) дубль на wh: отправляем ВСЮ query-строку (UTM, name, phone и т.п.) + event + pixel
       if (wh) {
         try {
           var params = new URLSearchParams(location.search);
@@ -37,8 +35,6 @@
     </script>
     
     
-
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -68,11 +64,6 @@
       </div>
     </div>
 
-    <div class="box">
-      <h3>UTM & tracking</h3>
-      <div id="utm"></div>
-    </div>
-
     <a class="btn" href="index.html">Back to main</a>
   </div>
 
@@ -93,23 +84,6 @@
       ? '<ul>'+keep.map(([k,v]) => `<li><code>${k}</code> = ${decodeURIComponent(v)}</li>`).join('')+'</ul>'
       : '<span class="muted">No UTM parameters</span>';
 
-    // === ТЕСТОВЫЙ "ПИКСЕЛЬ" ===
-    // Отправляем данные на тестовый адрес без CORS-ошибок.
-    // Здесь используем sendBeacon к httpbin (можешь заменить на свой эндпоинт).
-    const payload = new URLSearchParams();
-    payload.set('event', 'lead_submitted');
-    payload.set('name', name);
-    payload.set('phone', phone);
-    keep.forEach(([k,v]) => payload.append(k, v));
-
-    // 1) Тихо отправим (браузер не блокирует)
-    try {
-      navigator.sendBeacon('https://httpbin.org/post', payload);
-    } catch(e) {
-      // 2) Фоллбэк
-      fetch('https://httpbin.org/post', {method:'POST', mode:'no-cors', body: payload});
-    }
-    console.log('Pixel sent', Object.fromEntries(payload));
   })();
   </script>
 </body>

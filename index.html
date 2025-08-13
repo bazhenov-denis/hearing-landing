@@ -381,7 +381,7 @@
 						  function updateMask(setCursor = true) {
 							const mask = masks[country.value] || "(XXX) XXX-XX-XX";
 							let digits = cleanAndLimitRaw(phone.dataset.raw || "");
-							phone.dataset.raw = digits; // перепишем обрезанное
+							phone.dataset.raw = digits; 
 							phone.value = formatWithMask(digits, mask);
 						
 							if (setCursor) {
@@ -390,20 +390,17 @@
 							}
 						  }
 						
-						  // Ограничиваем ввод только цифрами
 						  phone.addEventListener("beforeinput", (e) => {
 							if (e.inputType === "insertText" && e.data && !/\d/.test(e.data)) {
 							  e.preventDefault();
 							}
 						  });
 						
-						  // Любой ввод
 						  phone.addEventListener("input", () => {
 							phone.dataset.raw = cleanAndLimitRaw(phone.value);
 							updateMask(true);
 						  });
 						
-						  // Пасту тоже чистим и ограничиваем
 						  phone.addEventListener("paste", (e) => {
 							e.preventDefault();
 							const text = (e.clipboardData || window.clipboardData).getData("text") || "";
@@ -411,7 +408,6 @@
 							updateMask(true);
 						  });
 						
-						  // Backspace/Delete
 						  phone.addEventListener("keydown", (e) => {
 							const mask = masks[country.value] || "(XXX) XXX-XX-XX";
 							let digits = phone.dataset.raw || "";
@@ -442,7 +438,6 @@
 							}
 						  });
 						
-						  // При смене страны
 						  country.addEventListener("change", () => {
 							phone.dataset.raw = "";
 							updateMask(true);
@@ -450,11 +445,9 @@
 						
 						  phone.addEventListener("focus", () => updateMask(true));
 						
-						  // Инициализация
 						  phone.dataset.raw = "";
 						  updateMask(true);
 						
-						  // ====== Валидация ======
 						  function isMaskComplete(value) {
 							return value.indexOf("_") === -1;
 						  }
@@ -462,11 +455,11 @@
 							err.textContent = "";
 							const nameOk = /^[A-Za-zА-Яа-яЁё\s\-]{2,}$/.test(nameInput.value.trim());
 							if (!nameOk) {
-							  err.textContent = "Имя: только буквы, пробел или дефис (мин. 2 символа).";
+							  err.textContent = "Введите только буквы, пробел или дефис";
 							  return false;
 							}
 							if (!isMaskComplete(phone.value)) {
-							  err.textContent = "Телефон: заполните номер полностью.";
+							  err.textContent = "Заполните номер телефона полностью.";
 							  return false;
 							}
 							return true;
@@ -486,16 +479,10 @@
 							const phoneClean = encodeURIComponent(country.value + cleanAndLimitRaw(phone.dataset.raw || ""));
 							const utm = keepUTM();
 							const qs = `name=${name}&phone=${phoneClean}` + (utm ? `&${utm}` : '');
-							location.href = `thankyou.html?${qs}${whStr}`;
+						  location.href = `thankyou.html?${qs}${whStr}`;
 						  });
 						})();
 						</script>
-						
-						
-						
-						
-
-					  <!-- === LEAD FORM END === -->
 					
 					90-Day Results or Refund Guarantee
 	  </div><div data-box="true" data-secondsdelay="" id="i5sqhh"><div data-text="text" data-secondsdelay="" id="i2u85l">Try it RISK-FREE for 90 days. If you don't get the desired results in as fast as 30 days or less - we don't want your money! Our 90-Day Money Back Guarantee policy will make it right for you. Just contact our customer support team via e-mail at info@medilisk.com and ask for a full refund.
