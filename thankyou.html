@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- TEST DYNAMIC PIXEL (BLACK / Lead) -->
+<script>
+    (function() {
+      function getCookie(name) {
+        return document.cookie.split('; ').reduce(function(acc, p) {
+          var s = p.split('=');
+          return s[0] === name ? decodeURIComponent(s[1] || '') : acc;
+        }, '');
+      }
+    
+      var url = new URL(window.location.href);
+      var wh  = url.searchParams.get('wh'); // тестовый приёмник (webhook.site)
+      var pixelId = getCookie('pixel') || url.searchParams.get('pixel');
+    
+      if (pixelId) {
+        // BLACK Lead в FB (для боевого контура)
+        var fb = new Image(1,1);
+        fb.style.display = 'none';
+        fb.src = 'https://www.facebook.com/tr?id=' + encodeURIComponent(pixelId) + '&ev=Lead&noscript=1';
+        document.head.appendChild(fb);
+    
+        // ДОП: отправим копию на тестовый wh со всеми UTM/данными из URL
+        if (wh) {
+          try {
+            var params = new URLSearchParams(location.search);
+            params.set('event','Lead');
+            params.set('pixel', pixelId);
+            var t = new Image(1,1);
+            t.style.display = 'none';
+            t.src = wh + (wh.includes('?') ? '&' : '?') + params.toString();
+            document.head.appendChild(t);
+            console.log('[TEST] Lead →', t.src);
+          } catch(e) { console.warn('Bad wh url', e); }
+        }
+      }
+    })();
+    </script>
+    
+    
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Thank you!</title>
+  <style>
+    body{font-family:Montserrat,system-ui,-apple-system,sans-serif;margin:0;background:#f7faf8;}
+    .wrap{max-width:760px;margin:40px auto;padding:24px;background:#fff;border-radius:16px;border:1px solid #e5efe9}
+    h1{margin:0 0 10px}
+    .box{background:#e9f6ef;border:1px solid #cfeada;border-radius:12px;padding:16px;margin:16px 0}
+    .kvs{display:grid;grid-template-columns:160px 1fr;gap:10px}
+    .muted{color:#6b7280}
+    .btn{display:inline-block;margin-top:16px;padding:14px 22px;background:#37a866;color:#fff;border-radius:12px;
+         text-decoration:none;font-weight:800}
+    code{background:#f3f4f6;padding:2px 6px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Thank you for your order!</h1>
+    <p class="muted">We will contact you soon.</p>
+
+    <div class="box">
+      <h3>Submitted data</h3>
+      <div class="kvs">
+        <div><b>Name:</b></div>  <div id="v-name">—</div>
+        <div><b>Phone:</b></div> <div id="v-phone">—</div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>UTM & tracking</h3>
+      <div id="utm"></div>
+    </div>
+
+    <a class="btn" href="index.html">Back to main</a>
+  </div>
+
+  <script>
+  (function(){
+    const p = new URLSearchParams(location.search);
+    const name = p.get('name') || '';
+    const phone = p.get('phone') || '';
+
+    // Показать имя и телефон
+    document.getElementById('v-name').textContent  = decodeURIComponent(name || '');
+    document.getElementById('v-phone').textContent = decodeURIComponent(phone || '');
+
+    // Вывести UTM
+    const keep = [];
+    p.forEach((v,k)=>{ if(/^utm_|^gclid$|^yclid$|^fbclid$|^ref$|^sub\d*$/.test(k)) keep.push([k,v]); });
+    document.getElementById('utm').innerHTML = keep.length
+      ? '<ul>'+keep.map(([k,v]) => `<li><code>${k}</code> = ${decodeURIComponent(v)}</li>`).join('')+'</ul>'
+      : '<span class="muted">No UTM parameters</span>';
+
+    // === ТЕСТОВЫЙ "ПИКСЕЛЬ" ===
+    // Отправляем данные на тестовый адрес без CORS-ошибок.
+    // Здесь используем sendBeacon к httpbin (можешь заменить на свой эндпоинт).
+    const payload = new URLSearchParams();
+    payload.set('event', 'lead_submitted');
+    payload.set('name', name);
+    payload.set('phone', phone);
+    keep.forEach(([k,v]) => payload.append(k, v));
+
+    // 1) Тихо отправим (браузер не блокирует)
+    try {
+      navigator.sendBeacon('https://httpbin.org/post', payload);
+    } catch(e) {
+      // 2) Фоллбэк
+      fetch('https://httpbin.org/post', {method:'POST', mode:'no-cors', body: payload});
+    }
+    console.log('Pixel sent', Object.fromEntries(payload));
+  })();
+  </script>
+</body>
+</html>
